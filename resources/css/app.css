@@ -1,0 +1,9 @@
+/* resources/css/app.css */
+
+/* Import Font Awesome */
+@import 'font-awesome/css/font-awesome.min.css';
+
+/* Tailwind's default base, components, and utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
