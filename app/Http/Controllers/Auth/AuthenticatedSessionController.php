@@ -3,42 +3,54 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Handle an incoming authentication request.
-     *
-     * @param  \App\Http\Requests\LoginRequest  $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Display the login view.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function create()
     {
-        // Authenticate the user
-        $request->authenticate();
-
-        // Regenerate session to prevent session fixation attacks
-        $request->session()->regenerate();
-
-        // Redirect back to the page the user was on, or to home if no intended page
-        return redirect()->intended('/');
+        return view('auth.login');
     }
 
     /**
-     * Destroy an authenticated session.
-     *
-     * @return \Illuminate\Http\RedirectResponse
+     * Handle an incoming authentication request.
      */
-    public function destroy(): RedirectResponse
+    public function store(Request $request)
     {
-        Auth::guard('web')->logout();
+        // Validate login credentials
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        request()->session()->invalidate();
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
 
-        request()->session()->regenerateToken();
+            $user = Auth::user();
+            if ($user->is_admin) {
+                return redirect('/admin/dashboard');
+            }
+            return redirect('/');
+        }
+
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
+    }
+
+    /**
+     * Log the user out.
+     */
+    public function destroy(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect('/');
     }

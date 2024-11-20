@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\AdminController;
 
 // Product routes
 Route::get('/', [ProductController::class, 'index'])->name('products');
@@ -19,3 +20,18 @@ Route::post('/pay', [PaymentController::class, 'pay'])->name('pay');
 Route::post('/indipay/response/success', [PaymentController::class, 'response'])->name('pay.response');
 Route::post('/indipay/response/failure', [PaymentController::class, 'response'])->name('pay.response');
 Route::get('payment-success', [PaymentController::class, 'paymentSuccess'])->name('success.pay');
+
+// Authentication routes
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->middleware('auth')->name('logout');
+
+
+// Registration route
+Route::get('/register', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [\App\Http\Controllers\Auth\RegisteredUserController::class, 'store']);
+
+// Admin dashboard
+Route::middleware('auth')->group(function () {
+Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+});

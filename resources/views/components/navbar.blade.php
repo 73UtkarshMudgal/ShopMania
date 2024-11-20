@@ -13,9 +13,29 @@
             <a href="" class="text-white hover:text-yellow-400">Contact</a>
         </div>
 
+        @auth
+        <!-- Logout Button -->
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: inline;">
+            @csrf
+            <div class="flex space-x-6">
+            <button type="submit" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md">
+                Logout
+            </button>
+        </div>
+        </form>
+         
+        @else
+
+        <div class="flex space-x-6">
         <!-- Login Button -->
-        <a href="" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md">
+        <a href="{{ route('login') }}" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md">
             Login
         </a>
+        <!-- Register Button -->
+        <a href="{{ route('register') }}" class="text-white bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md">
+            Register
+        </a>
+        </div>
+        @endauth
     </div>
 </nav>

@@ -17,6 +17,7 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price', 8, 2);
+            $table->decimal('mrp', 8, 2);
             $table->string('image'); // For storing the relative path to the image
             $table->text('description');
             $table->timestamps();
