@@ -2,6 +2,8 @@
 
 /* Import Font Awesome */
 @import 'font-awesome/css/font-awesome.min.css';
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 /* Tailwind's default base, components, and utilities */
 @tailwind base;

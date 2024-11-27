@@ -20,7 +20,7 @@ class ProductController extends Controller
     {
         // Get the cart from session
         $cart = session()->get('cart', []);
-        return view('cart', compact('cart')); // Pass cart data to the view
+        return view('cart.index', compact('cart')); // Pass cart data to the view
     }
 
     // Add product to the cart

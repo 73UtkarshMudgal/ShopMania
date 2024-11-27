@@ -11,7 +11,6 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-
 // Routes for guests (users not logged in)
 Route::middleware('guest')->group(function () {
     

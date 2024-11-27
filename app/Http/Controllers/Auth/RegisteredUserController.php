@@ -28,36 +28,45 @@ class RegisteredUserController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
-    {
+{
+    
+    try {
         // Validate input fields
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+        $validatedData = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'country' => ['required', 'string', 'max:255'],
             'state' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:500'],
-            'pin_code' => ['required', 'numeric', 'digits_between:4,10'],
+            'address_line2' => ['nullable', 'string', 'max:500'],
+            'zip' => ['required', 'numeric', 'digits_between:4,10'],
+            'phone' => ['required', 'string', 'max:20'],
+            'terms' => ['required', 'accepted'], // Ensure this is validated
         ]);
 
-        // Create the user
+       
+
+        // Proceed with creating the user
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'country' => $request->country,
-            'state' => $request->state,
-            'city' => $request->city,
-            'address' => $request->address,
-            'pin_code' => $request->pin_code,
-            'is_admin' => $request->has('is_admin') ? $request->is_admin : false, // Optional: Add admin flag
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'email' => $validatedData['email'],
+            'phone' => $validatedData['phone'],
+            'address' => $validatedData['address'],
+            'address_line2' => $validatedData['address_line2'],
+            'city' => $validatedData['city'],
+            'state' => $validatedData['state'],
+            'country' => $validatedData['country'],
+            'zip' => $validatedData['zip'],
+            'password' => Hash::make($validatedData['password']),
+            'is_admin' => false, // Default value for non-admin
+            'terms' => $validatedData['terms'], // Save the terms value (1 or 0)
         ]);
 
-        // Fire registered event
-        event(new Registered($user));
-
-        // Log in the user
+        // Log the user in
         Auth::login($user);
 
         // Redirect based on user role
@@ -65,6 +74,12 @@ class RegisteredUserController extends Controller
             return redirect('/admin/dashboard'); // Admin-specific dashboard
         }
 
-        return redirect('/'); // Default user product page
+        // Redirect non-admin users to the home page or some other page
+        return redirect('/');
+        
+    } catch (\Exception $e) {
+        // Catch any exception and log it as an error
+        return redirect()->back()->withErrors(['error' => 'There was an error during registration. Please try again.']);
     }
+}
 }

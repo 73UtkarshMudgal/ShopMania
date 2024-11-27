@@ -2,59 +2,78 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the profile edit view.
+     *
+     * @return \Illuminate\View\View
      */
-    public function edit(Request $request): View
+    public function edit()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        // Retrieve the currently authenticated user
+        $user = Auth::user();
+        
+        return view('profile.edit', compact('user')); // Pass the user data to the view
     }
 
     /**
-     * Update the user's profile information.
+     * Handle the profile update request.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request)
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['required', 'string', 'max:500'],
+            'address_line2' => ['nullable', 'string', 'max:500'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'zip' => ['required', 'numeric', 'digits_between:4,10'],
+            'password' => ['nullable', 'confirmed', 'min:8', 'max:255'],
+        ]);
+
+        // Update the user profile information
+        try {
+            $user->update([
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'email' => $validatedData['email'],
+                'phone' => $validatedData['phone'],
+                'address' => $validatedData['address'],
+                'address_line2' => $validatedData['address_line2'] ?? null,  // Optional field
+                'country' => $validatedData['country'],
+                'state' => $validatedData['state'],
+                'city' => $validatedData['city'],
+                'zip' => $validatedData['zip'],
+            ]);
+
+            // Update password if provided
+            if ($request->filled('password')) {
+                $user->update([
+                    'password' => Hash::make($validatedData['password'])
+                ]);
+            }
+
+            // Redirect to profile page with success message
+            return redirect()->route('profile.edit')->with('success', 'Profile updated successfully!');
+        } catch (\Exception $e) {
+            return redirect()->route('profile.edit')->withErrors(['error' => 'There was an error updating your profile.']);
         }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    }
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
     }
 }

@@ -21,6 +21,7 @@ class CreateProductsTable extends Migration
             $table->string('image'); // For storing the relative path to the image
             $table->text('description');
             $table->timestamps();
+            $table->integer('quantity')->default(0);
         });
     }
 
