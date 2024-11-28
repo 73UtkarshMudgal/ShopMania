@@ -92,7 +92,7 @@ Route::middleware('auth')->group(function() {
 });
 // Cart-related routes
 Route::post('/cart/add/{productId}', [CartController::class, 'addToCart'])->name('add-cart');
-// About Routes
+// About Route
 Route::get('/about', [AboutController::class, 'index'])->name('about.index');
 
 // Cart Routes
