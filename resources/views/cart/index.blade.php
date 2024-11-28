@@ -50,9 +50,9 @@
                                 <td>{{ $details['name'] }}</td>
                                 <td>
                                     <div class="d-flex justify-content-center align-items-center">
-                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({{ $id }}, 'decrease')">-</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({ $id }, 'decrease')">-</button>
                                         <span id="quantity-{{ $id }}" class="mx-2" data-max-stock="{{ $product->quantity }}">{{ $details['quantity'] }}</span>
-                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({{ $id }}, 'increase')">+</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({ $id }, 'increase')">+</button>
                                     </div>
                                     @if($isOutOfStock)
                                         <span class="text-danger">Quantity exceeds available stock. Maximum allowed: {{ $product->quantity }}</span>
