@@ -25,7 +25,7 @@
                             <tr>
                                 <td>
                                     <img 
-                                        src="{{ asset($details['image'] ?: 'images/default-product.jpg') }}" 
+                                    src="{{ asset(str_replace('images/images/', 'images/', $details['image']) ?: 'images/default-product.jpg') }}" 
                                         style="width: 110px; height: auto; object-fit: contain; border-radius: 8px;" 
                                         alt="{{ $details['name'] }}">
                                 </td>
@@ -62,6 +62,3 @@
 </div>
 
 @endsection
-
-
-

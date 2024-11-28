@@ -71,7 +71,7 @@ class RegisteredUserController extends Controller
 
         // Redirect based on user role
         if ($user->is_admin) {
-            return redirect('/admin/dashboard'); // Admin-specific dashboard
+            return redirect('/admin/products'); // Admin-specific dashboard
         }
 
         // Redirect non-admin users to the home page or some other page

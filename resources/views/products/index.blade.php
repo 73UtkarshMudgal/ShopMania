@@ -3,36 +3,33 @@
 @section('content')
     <div class="container mx-auto p-6">
         <!-- Heading -->
-        @if(isset($searchQuery))
-         <h1 class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold text-center mb-6">
-             Results for "{{ $searchQuery }}"
-         </h1>
-         @else
-         <h1 class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold text-center mb-6">
-          Our Products
-         </h1>
-         @endif
-
+        <h1 class="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold text-center mb-6">
+            @isset($searchQuery)
+                Results for "{{ $searchQuery }}"
+            @else
+                Our Products
+            @endisset
+        </h1>
 
         <!-- Check if products exist -->
         @if(count($products) > 0)
-            <!-- Grid setup with responsive columns, fixed width for cards -->
+            <!-- Grid setup with responsive columns -->
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 justify-center">
                 @foreach($products as $product)
-                    <!-- Card with fixed width and responsive layout -->
                     <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 max-w-[250px] flex flex-col h-[400px]" x-data="{ open: false }">
+                        <!-- Product Image Container -->
                         <div class="image-container w-full h-48 sm:h-56 md:h-60 lg:h-68 overflow-hidden mb-4 relative">
-                            <!-- Image inside the container -->
                             <img 
                                 src="{{ asset(str_replace('images/images/', 'images/', $product->image) ?: 'images/default-product.jpg') }}" 
                                 class="w-full h-full object-contain rounded-md mb-4 cursor-pointer"
                                 @click="open = true" 
+                                alt="{{ $product->name }}"
                             >
                         </div>
 
                         <!-- Product Name -->
                         <h5 class="text-sm font-semibold text-gray-800 mb-2 truncate">{{ $product->name }}</h5>
-                        
+
                         <!-- Product Price with Discount -->
                         <div class="mb-2">
                             <span class="text-lg font-bold text-green-600">₹{{ number_format($product->price) }}</span>
@@ -44,12 +41,15 @@
 
                         <!-- Add to Cart Button -->
                         <div class="flex mt-auto w-full">
-                            @if($product->quantity > 0)
-                            <a href="{{ route('add-cart', [$product->id]) }}" class="w-full py-2 bg-green-500 text-white text-center rounded-lg hover:bg-green-600 transition">
-                            <i class="fas fa-shopping-cart"></i> Add To Cart
-                            </a>
+                            @if($product->quantity > 0)  <!-- Only show "Add to Cart" if there's stock available -->
+                                <form action="{{ route('add-cart', [$product->id]) }}" method="POST" class="w-full">
+                                    @csrf
+                                    <button type="submit" class="w-full py-2 bg-green-500 text-white text-center rounded-lg hover:bg-green-600 transition">
+                                        <i class="fas fa-shopping-cart"></i> Add To Cart
+                                    </button>
+                                </form>
                             @else
-                                <a class="w-full py-2 bg-gray-400 text-black text-center rounded-lg cursor-not-allowed">
+                                <a class="w-full py-2 bg-gray-400 text-black text-center rounded-lg cursor-not-allowed" title="Out of Stock">
                                     Out of Stock
                                 </a>
                             @endif
@@ -60,12 +60,14 @@
                             <div class="bg-white bg-opacity-90 rounded-lg shadow-lg max-w-lg w-full p-6 relative">
                                 <!-- Close Button -->
                                 <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800" @click="open = false">×</button>
-                                
+
                                 <!-- Image inside Modal -->
                                 <div class="text-center">
                                     <img 
                                         src="{{ asset(str_replace('images/images/', 'images/', $product->image) ?: 'images/default-product.jpg') }}" 
-                                        class="w-full h-full object-contain rounded-md mb-4">
+                                        class="w-full h-full object-contain rounded-md mb-4"
+                                        alt="{{ $product->name }}"
+                                    >
                                 </div>
 
                                 <!-- Product Details -->

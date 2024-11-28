@@ -5,9 +5,13 @@
 <div class="container mt-5" style="background-color: ivory;">
     <h1 class="text-center mb-4"><b>My Cart</b></h1>
 
+    <!-- Success Message -->
     @if(session('success'))
-        <div class="alert alert-success text-center" id="successMessage">
-            {{ session('success') }}
+        <div id="successMessage" class="bg-green-500 text-white p-4 rounded-lg mb-6 flex justify-between items-center">
+            <span>{{ session('success') }}</span>
+            <button type="button" class="text-white font-bold" onclick="this.parentElement.style.display='none'">
+                &times;
+            </button>
         </div>
     @endif
 
@@ -28,6 +32,14 @@
                     </thead>
                     <tbody>
                         @foreach(session('cart') as $id => $details)
+                            @php
+                                // Get the product from the database
+                                $product = \App\Models\Product::find($id);
+
+                                // Ensure product exists and check stock availability
+                                $isOutOfStock = $product && $details['quantity'] > $product->quantity;
+                            @endphp
+
                             <tr>
                                 <td>
                                     <img 
@@ -37,14 +49,14 @@
                                 </td>
                                 <td>{{ $details['name'] }}</td>
                                 <td>
-                                    <input 
-                                        type="number" 
-                                        name="quantity" 
-                                        value="{{ $details['quantity'] }}" 
-                                        class="form-control text-center d-inline w-50 quantity-input" 
-                                        min="1" 
-                                        data-id="{{ $id }}" 
-                                        data-price="{{ $details['price'] }}">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({{ $id }}, 'decrease')">-</button>
+                                        <span id="quantity-{{ $id }}" class="mx-2" data-max-stock="{{ $product->quantity }}">{{ $details['quantity'] }}</span>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateQuantity({{ $id }}, 'increase')">+</button>
+                                    </div>
+                                    @if($isOutOfStock)
+                                        <span class="text-danger">Quantity exceeds available stock. Maximum allowed: {{ $product->quantity }}</span>
+                                    @endif
                                 </td>
                                 <td class="px-3">₹{{ $details['price'] }}</td>
                                 <td class="px-3">₹{{ $details['mrp'] ?? 'N/A' }}</td>
@@ -84,16 +96,70 @@
 
 @section('scripts')
 <script>
-    // Check if the script is being loaded
-    console.log("Script is running!");
-
     // Automatically dismiss the success message after 3 seconds
     setTimeout(function() {
         let successMessage = document.getElementById('successMessage');
         if (successMessage) {
             successMessage.style.display = 'none'; // Hide the success message
-            console.log("Success message hidden!");
         }
     }, 3000); // 3000ms = 3 seconds
+
+    // Update Quantity
+    function updateQuantity(id, action) {
+        let quantitySpan = document.getElementById(`quantity-${id}`);
+        let currentQuantity = parseInt(quantitySpan.innerText);
+        let maxStock = parseInt(quantitySpan.getAttribute('data-max-stock'));
+
+        console.log("Current Quantity:", currentQuantity);
+        console.log("Max Stock:", maxStock);
+
+        // Prevent updating quantity if item is out of stock
+        if (maxStock <= 0) {
+            alert("This item is out of stock and cannot be updated.");
+            return;
+        }
+
+        // Handle quantity updates based on action
+        if (action === 'increase' && currentQuantity < maxStock) {
+            currentQuantity++;
+        } else if (action === 'decrease' && currentQuantity > 1) {
+            currentQuantity--;
+        }
+
+        // Update the span with the new quantity
+        quantitySpan.innerText = currentQuantity;
+
+        // Update Cart via AJAX
+        updateCart(id, currentQuantity);
+    }
+
+    // Update Cart via AJAX
+    function updateCart(id, quantity) {
+        fetch('/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id: id,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response and update the UI accordingly
+            if (data.success) {
+                // Update the total items and cart total dynamically
+                document.getElementById("totalItems").innerText = data.totalItems;
+                document.getElementById("cartTotal").innerText = data.cartTotal;
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating cart:', error);
+        });
+    }
 </script>
 @endsection

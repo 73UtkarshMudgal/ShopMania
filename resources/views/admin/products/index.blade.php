@@ -1,36 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto">
-    <h1 class="text-2xl font-bold mb-4 text-center">Manage Products</h1>
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Manage Products</h1>
 
+    <!-- Success Message -->
     @if(session('success'))
-        <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
+        <div class="bg-green-100 text-green-700 p-4 rounded-lg mb-6">
             {{ session('success') }}
         </div>
     @endif
-    <div class="flex  justify-center">
 
-    <a href="{{ route('admin.products') }}" class="text-white hover:text-gray-300 ">
-    <i class="fas fa-arrow-left text-black text-2xl"></i> 
-    </a>
-    <div class="flex px-2"> </div>
-    <!-- Search Form -->
-    <form method="GET" action="{{ route('admin.products') }}" class="mb-4 flex justify-center">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products..." class="border rounded-l px-4 py-2">
-        <button type="submit" class="bg-blue-500 text-blue px-4 py-2 rounded-r">Search</button>
-    </form>
+    <!-- Navigation and Search Form -->
+    <div class="flex justify-center mb-6">
+        <a href="{{ route('admin.products') }}" class="text-black hover:text-gray-600">
+            <i class="fas fa-arrow-left text-2xl"></i>
+        </a>
+        <div class="px-4"></div>
+        <!-- Search Form -->
+        <form method="GET" action="{{ route('admin.products') }}" class="flex">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products..." class="border rounded-l px-4 py-2 w-80">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
+        </form>
     </div>
-    
-    
 
-    <div class="mb-4 flex justify-end">
-        <a href="{{ route('admin.products.create') }}" class="bg-black text-gray-500 hover:bg-yellow-500 hover:text-white px-4 py-2 rounded-md transition duration-200 ease-in-out">
+    <!-- Add Product Button -->
+    <div class="flex justify-end mb-6">
+        <a href="{{ route('admin.products.create') }}" class="bg-black text-gray-500 hover:bg-yellow-500 hover:text-white px-6 py-3 rounded-md transition duration-200 ease-in-out">
             Add Product
         </a>
     </div>
 
-    <table class="table-auto w-full border">
+    <!-- Products Table -->
+    <table class="table-auto w-full border-collapse border text-left">
         <thead>
             <tr class="bg-gray-200">
                 <th class="border px-4 py-2">Image</th>
@@ -44,11 +46,10 @@
         </thead>
         <tbody>
             @forelse($products as $product)
-                <tr>
-   
+                <tr class="hover:bg-gray-100">
                     <td class="border px-4 py-2">
                         @if($product->image)
-                            <img src="{{ asset(str_replace('images/images/', 'images/', $product->image) ?: 'images/default-product.jpg') }}" class="w-16 h-16 object-cover">
+                            <img src="{{ asset(str_replace('images/images/', 'images/', $product->image) ?: 'images/default-product.jpg') }}" class="w-16 h-16 object-cover rounded-md">
                         @else
                             No Image
                         @endif
@@ -59,11 +60,11 @@
                     <td class="border px-4 py-2">₹{{ number_format($product->price, 2) }}</td>
                     <td class="border px-4 py-2">{{ $product->quantity }}</td>
                     <td class="border px-4 py-2">
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="text-blue-500 mr-2">Edit</a>
-                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" style="display: inline;">
+                        <a href="{{ route('admin.products.edit', $product->id) }}" class="text-blue-500 mr-2 hover:text-blue-700">Edit</a>
+                        <form action="{{ route('admin.products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this product?');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="text-red-500">Delete</button>
+                            <button type="submit" class="text-red-500 hover:text-red-700">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -75,10 +76,9 @@
         </tbody>
     </table>
 
-    <!-- Add pagination links here -->
-    <div class="mt-4">
+    <!-- Pagination -->
+    <div class="mt-6">
         {{ $products->appends(['search' => request('search')])->links() }}
     </div>
-
 </div>
 @endsection
